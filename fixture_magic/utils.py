@@ -58,11 +58,11 @@ def serialize_fully(exclude_fields):
 
     while index < len(serialize_me):
         for field in get_fields(serialize_me[index], *exclude_fields):
-            if getattr(field.related_model, "_config_model") and isinstance(field, models.ForeignKey):
+            if getattr(field.related_model, "_config_model", False) and isinstance(field, models.ForeignKey):
                 add_to_serialize_list(
                     [serialize_me[index].__getattribute__(field.name)])
         for field in get_m2m(serialize_me[index], *exclude_fields):
-            if getattr(field.related_model, "_config_model"):
+            if getattr(field.related_model, "_config_model", False):
                 add_to_serialize_list(
                     serialize_me[index].__getattribute__(field.name).all())
 
