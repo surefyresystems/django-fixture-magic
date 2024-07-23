@@ -40,14 +40,14 @@ def reorder_json(data, models, ordering_cond=None):
 
 def get_fields(obj, *exclude_fields):
     try:
-        return [f for f in obj._meta.fields if f.name not in exclude_fields and getattr(obj, '_config_model')]
+        return [f for f in obj._meta.fields if f.name not in exclude_fields]
     except AttributeError:
         return []
 
 
 def get_m2m(obj, *exclude_fields):
     try:
-        return [f for f in obj._meta.many_to_many if f.name not in exclude_fields and getattr(obj, '_config_model')]
+        return [f for f in obj._meta.many_to_many if f.name not in exclude_fields]
     except AttributeError:
         return []
 
@@ -58,12 +58,13 @@ def serialize_fully(exclude_fields):
 
     while index < len(serialize_me):
         for field in get_fields(serialize_me[index], *exclude_fields):
-            if isinstance(field, models.ForeignKey):
+            if getattr(field.related_model, "_config_model") and isinstance(field, models.ForeignKey):
                 add_to_serialize_list(
                     [serialize_me[index].__getattribute__(field.name)])
         for field in get_m2m(serialize_me[index], *exclude_fields):
-            add_to_serialize_list(
-                serialize_me[index].__getattribute__(field.name).all())
+            if getattr(field.related_model, "_config_model"):
+                add_to_serialize_list(
+                    serialize_me[index].__getattribute__(field.name).all())
 
         index += 1
 
