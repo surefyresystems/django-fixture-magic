@@ -40,14 +40,14 @@ def reorder_json(data, models, ordering_cond=None):
 
 def get_fields(obj, *exclude_fields):
     try:
-        return [f for f in obj._meta.fields if f.name not in exclude_fields]
+        return [f for f in obj._meta.fields if f.name not in exclude_fields and getattr(obj.model, '_config_model')]
     except AttributeError:
         return []
 
 
 def get_m2m(obj, *exclude_fields):
     try:
-        return [f for f in obj._meta.many_to_many if f.name not in exclude_fields]
+        return [f for f in obj._meta.many_to_many if f.name not in exclude_fields and getattr(obj.model, '_config_model')]
     except AttributeError:
         return []
 
