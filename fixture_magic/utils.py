@@ -52,17 +52,30 @@ def get_m2m(obj, *exclude_fields):
         return []
 
 
-def serialize_fully(exclude_fields):
+def should_include(model, exclude_models):
+    """
+
+    :param model: Model to check
+    :param exclude_models: List of models to exclude
+    :return: Boolean indicating if model should be included
+    """
+    app_label = model._meta.app_label
+    object_name = model._meta.object_name
+    return "{}.{}".format(app_label, object_name) not in exclude_models
+
+
+def serialize_fully(exclude_fields, exclude_models):
     index = 0
     exclude_fields = exclude_fields or ()
+    exclude_models = exclude_models or ()
 
     while index < len(serialize_me):
         for field in get_fields(serialize_me[index], *exclude_fields):
-            if getattr(field.related_model, "_config_model", False) and isinstance(field, models.ForeignKey):
+            if isinstance(field, models.ForeignKey) and should_include(field.related_model, exclude_models):
                 add_to_serialize_list(
                     [serialize_me[index].__getattribute__(field.name)])
         for field in get_m2m(serialize_me[index], *exclude_fields):
-            if getattr(field.related_model, "_config_model", False):
+            if should_include(field.related_model, exclude_models):
                 add_to_serialize_list(
                     serialize_me[index].__getattribute__(field.name).all())
 

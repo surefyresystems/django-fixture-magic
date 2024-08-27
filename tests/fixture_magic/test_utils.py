@@ -1,6 +1,7 @@
 import unittest
 
-from fixture_magic.utils import reorder_json, get_fields, get_m2m
+from fixture_magic.compat import get_all_related_objects
+from fixture_magic.utils import reorder_json, get_fields, get_m2m, should_include
 
 from .models import Person, Group
 
@@ -30,3 +31,12 @@ class UtilsTestCase(unittest.TestCase):
         fields = get_m2m(Group)
         field_names = [field.name for field in fields]
         self.assertIn("members", field_names)
+
+    def test_exclude_models(self):
+        self.assertTrue(should_include(Group, ["tests.Person", "test.Membership"]))
+        self.assertFalse(should_include(Person, ["tests.Person", "test.Membership"]))
+        
+        related_objs = get_all_related_objects(Group, [], [])
+        self.assertEqual(len(related_objs), 1, "Confirm no models were excluded.")
+        related_objs = get_all_related_objects(Group, [], ["tests.Membership"])
+        self.assertEqual(len(related_objs), 0, "Confirmed exclude model not in included.")

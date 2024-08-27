@@ -39,6 +39,10 @@ class Command(BaseCommand):
                             default=[],
                             nargs='*',
                             help='List of excluded fields (works for all models)')
+        parser.add_argument('--exclude-models', '-m',
+                            default=[],
+                            nargs='*',
+                            help='List of excluded models')
         parser.add_argument('--natural', '-n',
                             action='store_true', dest='natural',
                             default=False,
@@ -113,7 +117,7 @@ class Command(BaseCommand):
                     objs = []
 
         if options.get('kitchensink'):
-            fields = get_all_related_objects(dump_me, options['exclude_fields'])
+            fields = get_all_related_objects(dump_me, options['exclude_fields'], options['exclude_models'])
 
             related_fields = [rel.get_accessor_name() for rel in fields]
 
@@ -132,7 +136,7 @@ class Command(BaseCommand):
         add_to_serialize_list(objs)
 
         if options.get('follow_fk', True):
-            serialize_fully(options['exclude_fields'])
+            serialize_fully(options['exclude_fields'], options["exclude_models"])
         else:
             # reverse list to match output of serializez_fully
             serialize_me.reverse()
