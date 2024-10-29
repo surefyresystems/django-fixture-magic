@@ -128,7 +128,13 @@ class Command(BaseCommand):
         if options.get('kitchensink'):
             fields = get_all_related_objects(dump_me, options['exclude_fields'], exclude_models)
 
-            related_fields = [rel.get_accessor_name() for rel in fields]
+            related_fields = []
+            for rel in fields:
+                try:
+                    related_fields.append(rel.get_accessor_name())
+                except AttributeError:
+                    related_fields.append(rel.attname)
+
 
             for obj in objs:
                 for rel in related_fields:
